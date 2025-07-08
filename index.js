@@ -13,10 +13,17 @@ app.get('/', (req, res) => {
 });
 
 app.post('/submit-score', (req, res) => {
-  const { player, score } = req.body;
-  highScores.push({ player, score });
-  highScores = highScores.sort((a, b) => b.score - a.score).slice(0, 10);
-  res.json({ status: 'success', message: 'Score saved!' });
+  try {
+    const { player, score } = req.body;
+    if (!player || typeof score !== 'number') {
+      return res.status(400).json({ status: 'error', message: 'Invalid data' });
+    }
+    highScores.push({ player, score, date: new Date().toISOString() });
+    highScores = highScores.sort((a, b) => b.score - a.score).slice(0, 10);
+    res.json({ status: 'success', message: 'Score saved!', highScores });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: 'Server error' });
+  }
 });
 
 app.get('/leaderboard', (req, res) => {
